@@ -1,0 +1,44 @@
+{
+  "name": "nixphp/auth",
+  "description": "Authentication and permission checks for NixPHP, with your own user model.",
+  "minimum-stability": "stable",
+  "license": "MIT",
+  "type": "nixphp-plugin",
+  "authors": [
+    {
+      "name": "Flo Knapp",
+      "email": "office@florianknapp.de"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "NixPHP\\Auth\\": "src/"
+    },
+    "files": [
+      "src/functions.php"
+    ]
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Tests\\": "tests/"
+    }
+  },
+  "require": {
+    "php": ">=8.3",
+    "nixphp/framework": "^0.1.0"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^12.1",
+    "phpstan/phpstan": "^2.1",
+    "nixphp/session": "^0.1.0",
+    "nixphp/orm": "^0.1.0"
+  },
+  "suggest": {
+    "nixphp/session": "Keep people signed in across requests.",
+    "nixphp/orm": "Use the shipped OrmProvider instead of writing your own."
+  },
+  "scripts": {
+    "test": "phpunit --colors=always",
+    "analyse": "phpstan analyse --memory-limit=256M"
+  }
+}
