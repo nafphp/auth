@@ -209,4 +209,35 @@ final class WiringTest extends TestCase
         self::assertSame(401, ErrorHandler::resolveStatusCode(new UnauthenticatedException()));
         self::assertSame(403, ErrorHandler::resolveStatusCode(new ForbiddenException()));
     }
+
+    public function testOneModelIsEnoughToRegisterASource(): void
+    {
+        // No repository class, no identity factory, no provider name.
+        $this->configure(['session' => false, 'users' => ['model' => User::class]]);
+        $this->boot();
+
+        self::assertTrue(auth()->hasProvider('users'));
+        self::assertSame(['users'], auth()->providers());
+    }
+
+    public function testNamingSourcesExplicitlyStillWins(): void
+    {
+        // An application that already named its sources keeps the names it chose.
+        $this->configure([
+            'session'   => false,
+            'users'     => ['model' => User::class],
+            'providers' => ['database' => ProviderSpy::class],
+        ]);
+        $this->boot();
+
+        self::assertSame(['database'], auth()->providers());
+    }
+
+    public function testWithoutEitherThereIsNoSource(): void
+    {
+        $this->configure(['session' => false]);
+        $this->boot();
+
+        self::assertSame([], auth()->providers());
+    }
 }

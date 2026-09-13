@@ -90,8 +90,7 @@ Nothing to configure. PHP 8.3+ and NixPHP framework ^0.1.
 
 ## Quickstart
 
-This is the whole setup with `nixphp/orm`. Without the ORM, swap step 3 for
-[your own provider](#writing-your-own-provider) — everything else is identical.
+Two steps: a table, and a model. Nothing else is written by hand.
 
 ### 1. A table
 
@@ -108,17 +107,18 @@ Columns are yours to name — the provider is told which is which in step 3.
 
 ### 2. Your user model
 
-One interface, three methods. Everything else on the class stays yours.
+One interface, five methods. Everything else on the class stays yours.
 
 ```php
-use NixPHP\Auth\Identity\IdentityInterface;
+use NixPHP\Auth\Identity\{UserInterface, UserProfile};
 use NixPHP\ORM\Model\AbstractModel;
 
-class User extends AbstractModel implements IdentityInterface
+class User extends AbstractModel implements UserInterface
 {
     protected string $username = '';
     protected string $password = '';
     protected string $roles    = '';
+    protected int    $suspended = 0;
 
     public function getIdentifier(): string { return (string) $this->id; }
 
@@ -130,50 +130,71 @@ class User extends AbstractModel implements IdentityInterface
     /** Return [] until you actually need permissions. */
     public function getPermissions(): iterable { return []; }
 
+    public function isActive(): bool { return $this->suspended === 0; }
+
+    public function getProfile(): UserProfile
+    {
+        return new UserProfile($this->name, $this->email, $this->email_verified === 1);
+    }
+
     public function getUsername(): string { return $this->username; }
     public function getPassword(): string { return $this->password; }
     public function setPassword(string $password): void { $this->password = $password; }
 }
 ```
 
-```php
-use NixPHP\ORM\Repository\AbstractRepository;
+**`isActive()` is asked every time the account is loaded**, so suspending somebody takes effect
+on their next request rather than when their session happens to expire. It applies to every way
+of signing in — password, external provider, API token — because the question is asked once, in
+`auth()`, rather than in each of them.
 
-class UserRepository extends AbstractRepository
-{
-    protected function getEntityClass(): string { return User::class; }
-}
-```
+**`getProfile()` is what may be shown**, chosen deliberately. It is not a getter over the model:
+a profile crosses boundaries — a consent screen, an ID token, a UserInfo answer — and a field
+that reflected the model would export the next column somebody adds. Identity stays separate:
+the identifier, the roles and the permissions answer "who is this and what may they do", the
+profile answers "what may be said about them".
 
-### 3. Configure the provider
-
-The plugin's `bootstrap.php` registers its container factories, calls `addProvider()` for each
-configured source and registers the configured policies. Declare the accounts source in your
-application configuration:
+### 3. Point at the model
 
 ```php
 // app/config.php
-use NixPHP\Auth\Provider\OrmProvider;
-
 return ['auth' => [
-    'providers' => ['database' => OrmProvider::class],
-    'orm' => [
-        'repository' => UserRepository::class,
-        'username_field' => 'username', // e.g. email
-        'password_field' => 'password', // e.g. password_hash
-        'identifier_field' => 'id',
-    ],
+    'users' => ['model' => User::class],
 ]];
 ```
 
-**`'database'` is a name you chose**. It shows up in the session record and in
-`auth()->providerName()`, and matters when you configure more than one source.
-The ORM bootstrap supplies `RepositoryFactory` and `EntityManager`; the auth bootstrap injects
-the resulting repository, entity manager and shared `PasswordHasher` into `OrmProvider`.
+That is the whole configuration. No repository class, no factory, no provider name: the
+repository is built from the model, the connection comes from the ORM, and the source is
+registered under the name **`users`** — which is what ends up in the session record and in
+account links.
+
+Name the columns only if yours differ:
+
+```php
+'users' => [
+    'model' => User::class,
+    'username_field' => 'email',
+    'password_field' => 'password_hash',
+],
+```
 
 `OrmProvider` reads the hash through your model's own getter (`getPassword()` for a `password`
 column) and falls back to the ORM's field map when there is none. When your model also has the
 matching setter, an outdated hash is silently upgraded to the current cost on the next login.
+
+### The older, explicit form
+
+Naming sources yourself still works and still takes precedence — it is the only way to have
+several:
+
+```php
+return ['auth' => [
+    'providers' => ['database' => OrmProvider::class],
+    'orm' => ['repository' => UserRepository::class],
+]];
+```
+
+An application written against this keeps working unchanged, including the source name it chose.
 
 ### Without an ORM: plain PDO
 
@@ -486,6 +507,12 @@ auth()->setIdentity($user);               // unnamed: this request only
 name it also updates the session when persistence is enabled. Without a name it clears any
 previous persisted authentication and sets the identity for this request only.
 
+Need the model first — to look up who an external login belongs to, to impersonate somebody, or
+in a CLI tool? `auth()->load('database', '42')` reads it through the registered source and hands
+it back. It changes nothing: no login, no session, no store. It answers `null` for an unknown
+source, an empty identifier, a vanished account, or a provider that hands back somebody else —
+the same guarantee restoration relies on, because restoration now calls it.
+
 ---
 
 ## Reference
@@ -498,6 +525,8 @@ Everything the plugin exposes.
 | --- | --- |
 | `addProvider(string $name, ProviderInterface\|string $provider)` | Register a source of accounts. |
 | `hasProvider(string $name)` | Is that name taken? |
+| `providers()` | The names of every registered source, in order. |
+| `load(string $provider, string $identifier)` | Reload an account through a source, without signing anybody in. Touches no session. |
 | `authenticate(CredentialsInterface $credentials, ?string $provider = null)` | Verify and sign in. `bool` |
 | `setIdentity(IdentityInterface $identity, ?string $provider = null)` | Adopt an already verified identity; optionally persist it. No credential verification. |
 | `logout()` / `reset()` | End the login / forget the loaded model without logging out. |
@@ -511,7 +540,9 @@ Everything the plugin exposes.
 
 | Namespace | Name | Responsibility |
 | --- | --- | --- |
-| `Identity` | `IdentityInterface` | Your user: identifier, roles, permissions. |
+| `Identity` | `UserInterface` | Your user model: identity, plus whether the account is open and what may be shown. |
+| `Identity` | `UserProfile` | Display name, e-mail, and whether that address was actually confirmed. |
+| `Identity` | `IdentityInterface` | The older contract: identifier, roles, permissions. Still accepted. |
 | `Identity` | `Identity` | A ready-made identity for CLI tools and tests. |
 | `Credentials` | `CredentialsInterface` | Marker for whatever a provider needs. |
 | `Credentials` | `PasswordCredentials` | Username and password, redacted in debug output. |
@@ -519,6 +550,7 @@ Everything the plugin exposes.
 | `Provider` | `PasswordProvider` | Base class for stored password hashes. |
 | `Provider` | `DatabaseProvider` | Accounts accessed through an existing PDO connection. |
 | `Provider` | `OrmProvider` | Accounts stored with `nixphp/orm`. |
+| `Provider` | `ModelRepository` | A repository built from a model class, so you need not write an empty one. |
 | `Session` | `StateStoreInterface` | Read, write and clear the two persisted values. |
 | `Session` | `SessionStateStore` | The `nixphp/session` implementation, with ID rotation. |
 | `Support` | `PasswordHasher` | Hashing, rehash detection, decoy verification. |

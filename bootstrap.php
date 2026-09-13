@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 use NixPHP\Auth\Auth;
 use NixPHP\Auth\Identity\Identity;
-use NixPHP\Auth\Provider\{DatabaseProvider, OrmProvider};
+use NixPHP\Auth\Provider\{DatabaseProvider, ModelRepository, OrmProvider};
 use NixPHP\Auth\Session\{SessionStateStore, StateStoreInterface};
 use NixPHP\Auth\Support\PasswordHasher;
+use NixPHP\ORM\Core\EntityInterface;
 use NixPHP\ORM\Core\EntityManager;
 use NixPHP\ORM\Repository\{AbstractRepository, RepositoryFactory};
 use NixPHP\Session\Core\Session;
@@ -42,19 +43,37 @@ if (!$container->has(DatabaseProvider::class)) {
 if (!$container->has(OrmProvider::class)) {
     $container->set(OrmProvider::class, static function () use ($container): OrmProvider {
         $repository = config('auth:orm:repository');
-        if (!is_string($repository) || !is_a($repository, AbstractRepository::class, true)) {
-            throw new InvalidArgumentException('Configure auth:orm:repository with an AbstractRepository class.');
+        $model      = config('auth:users:model');
+
+        if (is_string($repository) && is_a($repository, AbstractRepository::class, true)) {
+            // An application that wrote its own repository keeps using it.
+            $resolved = $container->has($repository)
+                ? $container->get($repository)
+                : $container->get(RepositoryFactory::class)->create($repository);
+
+            $fields = 'auth:orm:';
+        } elseif (is_string($model) && is_a($model, EntityInterface::class, true)) {
+            // The ordinary case: a model class, and nothing else to write.
+            $resolved = new ModelRepository(
+                $container->get(PDO::class),
+                $container->get(EntityManager::class),
+                $model,
+            );
+
+            $fields = 'auth:users:';
+        } else {
+            throw new InvalidArgumentException(
+                'Configure auth:users:model with your user model, or auth:orm:repository with a repository class.'
+            );
         }
 
         return new OrmProvider(
-            repository: $container->has($repository)
-                ? $container->get($repository)
-                : $container->get(RepositoryFactory::class)->create($repository),
+            repository: $resolved,
             hasher: $container->get(PasswordHasher::class),
             entityManager: $container->get(EntityManager::class),
-            usernameField: config('auth:orm:username_field', 'username'),
-            passwordField: config('auth:orm:password_field', 'password'),
-            identifierField: config('auth:orm:identifier_field', 'id'),
+            usernameField: config($fields . 'username_field', 'username'),
+            passwordField: config($fields . 'password_field', 'password'),
+            identifierField: config($fields . 'identifier_field', 'id'),
         );
     });
 }
@@ -74,7 +93,20 @@ if (!$container->has(Auth::class)) {
 
         $auth = new Auth($store, static fn(string $class): object => $container->get($class));
 
-        foreach (config('auth:providers', []) as $name => $provider) {
+        $providers = (array) config('auth:providers', []);
+
+        // Naming sources explicitly wins; it is the only way to have several, and
+        // an application that already did keeps the names it chose.
+        if ($providers === [] && config('auth:users:model') !== null) {
+            $providers = ['users' => match (config('auth:users:store', 'orm')) {
+                'orm'   => OrmProvider::class,
+                default => throw new RuntimeException(
+                    'auth:users:store only understands "orm". For anything else, name the source in auth:providers.'
+                ),
+            }];
+        }
+
+        foreach ($providers as $name => $provider) {
             $auth->addProvider($name, $provider);
         }
 

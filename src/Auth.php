@@ -11,6 +11,7 @@ use LogicException;
 use NixPHP\Auth\Credentials\CredentialsInterface;
 use NixPHP\Auth\Exceptions\{ForbiddenException, UnauthenticatedException};
 use NixPHP\Auth\Identity\IdentityInterface;
+use NixPHP\Auth\Identity\UserInterface;
 use NixPHP\Auth\Provider\ProviderInterface;
 use NixPHP\Auth\Session\StateStoreInterface;
 use UnexpectedValueException;
@@ -77,6 +78,43 @@ final class Auth
         return isset($this->providers[$name]);
     }
 
+    /**
+     * Every registered source, in the order it was added.
+     *
+     * The registry is here, so asking anywhere else means asking a copy. A source
+     * added imperatively in a bootstrap is as real as one that came from
+     * configuration, and only this list knows about both.
+     *
+     * @return list<string>
+     */
+    public function providers(): array
+    {
+        return array_keys($this->providers);
+    }
+
+    /**
+     * Reload an account through a registered source, without signing anybody in.
+     *
+     * Touches no session state: the current login, the loaded model and the store
+     * are all left exactly as they were. An unknown source, an empty identifier or
+     * a provider that hands back somebody else all answer null — the very guarantee
+     * restoration depends on, written once and used by both.
+     */
+    public function load(string $provider, string $identifier): ?IdentityInterface
+    {
+        if ($identifier === '' || !$this->hasProvider($provider)) {
+            return null;
+        }
+
+        $identity = $this->provider($provider)->find($identifier);
+
+        if ($identity === null || $identity->getIdentifier() !== $identifier) {
+            return null;
+        }
+
+        return self::usable($identity);
+    }
+
     // --------------------------------------------------------- Signing in, out
 
     /**
@@ -88,7 +126,7 @@ final class Auth
     public function authenticate(#[\SensitiveParameter] CredentialsInterface $credentials, ?string $provider = null): bool
     {
         $name     = $provider ?? $this->soleProvider();
-        $identity = $this->provider($name)->authenticate($credentials);
+        $identity = self::usable($this->provider($name)->authenticate($credentials));
 
         if ($identity === null) {
             return false;
@@ -112,6 +150,14 @@ final class Auth
     {
         if ($identity->getIdentifier() === '') {
             throw new InvalidArgumentException('An identity identifier cannot be empty.');
+        }
+
+        if (self::usable($identity) === null) {
+            // Verified some other way is still not a reason to sign in somebody
+            // who may not sign in. Whoever trusted this identity has to check
+            // whether the account is open, and this says so rather than letting
+            // it through quietly.
+            throw new InvalidArgumentException('A suspended account cannot be signed in.');
         }
 
         if ($provider !== null) {
@@ -336,11 +382,9 @@ final class Auth
             return;
         }
 
-        $identity = $this->hasProvider($record['provider'])
-            ? $this->provider($record['provider'])->find($record['identifier'])
-            : null;
+        $identity = $this->load($record['provider'], $record['identifier']);
 
-        if ($identity === null || $identity->getIdentifier() !== $record['identifier']) {
+        if ($identity === null) {
             $this->store?->clear();
             return;
         }
@@ -387,6 +431,24 @@ final class Auth
         }
 
         return $names[0];
+    }
+
+    /**
+     * A suspended account is not a signed-in account, whichever door it came
+     * through. Asked here rather than in each provider, so a model that says it
+     * is closed is closed everywhere — password login, external login, API token
+     * and session restoration alike.
+     *
+     * Models that only implement IdentityInterface are unaffected: without the
+     * question there is nothing to answer, and they behave exactly as before.
+     */
+    private static function usable(?IdentityInterface $identity): ?IdentityInterface
+    {
+        if ($identity instanceof UserInterface && !$identity->isActive()) {
+            return null;
+        }
+
+        return $identity;
     }
 
     private static function name(string|BackedEnum $value): string

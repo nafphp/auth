@@ -53,6 +53,10 @@ identifier. Never the model, never the grants.
 - Restoration reloads through `find()` and compares the returned identifier against the stored one,
   so a provider that hands back somebody else cannot silently swap the person. A missing account,
   an unregistered source or a malformed record clears the record instead of falling back.
+- That comparison lives in `load()`, and `restore()` calls it. The public method exists because
+  external logins and CLI tools need the same reload, and a second copy of the check is a second
+  place for it to drift. `load()` returns null where restoration would clear the record; deciding
+  what that means is the caller's job, so it touches no session state of its own.
 - `SessionStateStore` rotates the session ID on login and verifies that it actually changed. A
   rotation that does not happen aborts the login rather than publishing a person onto the guest's ID.
 - `SessionStateStore` receives its session through constructor injection. The bootstrap creates

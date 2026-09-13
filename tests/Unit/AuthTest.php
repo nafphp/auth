@@ -298,4 +298,78 @@ final class AuthTest extends TestCase
         self::assertSame(['username' => 'alice', 'password' => '[redacted]'], $credentials->__debugInfo());
         self::assertStringNotContainsString('hunter2', print_r($credentials, true));
     }
+
+    // ---------------------------------------------------------------- Loading
+
+    public function testLoadReturnsTheAccountWithoutSigningAnybodyIn(): void
+    {
+        $this->auth->addProvider('database', $this->database);
+
+        self::assertSame($this->database->identity, $this->auth->load('database', '42'));
+
+        self::assertFalse($this->auth->check());
+        self::assertNull($this->store->record);
+        self::assertSame(0, $this->store->writes);
+        self::assertSame(0, $this->store->clears);
+    }
+
+    public function testLoadLeavesAnExistingLoginUntouched(): void
+    {
+        $this->withBoth();
+        $this->auth->authenticate(new PasswordCredentials('alice', 'valid'), 'database');
+        $writes = $this->store->writes;
+
+        self::assertNotNull($this->auth->load('ldap', '42'));
+
+        self::assertSame('database', $this->auth->providerName());
+        self::assertSame($this->database->identity, $this->auth->user());
+        self::assertSame($writes, $this->store->writes);
+        self::assertSame(0, $this->store->clears);
+    }
+
+    public function testLoadAnswersNullForWhatCannotBeLoaded(): void
+    {
+        $this->auth->addProvider('database', $this->database);
+
+        self::assertNull($this->auth->load('ldap', '42'), 'unregistered source');
+        self::assertNull($this->auth->load('database', ''), 'empty identifier');
+        self::assertNull($this->auth->load('database', '99'), 'unknown account');
+        self::assertSame(0, $this->store->clears);
+    }
+
+    public function testLoadRejectsASourceHandingBackSomebodyElse(): void
+    {
+        $this->auth->addProvider('database', new class implements ProviderInterface {
+            public function find(string $identifier): ?\NixPHP\Auth\Identity\IdentityInterface
+            {
+                return new Identity('99');
+            }
+            public function authenticate(#[\SensitiveParameter] \NixPHP\Auth\Credentials\CredentialsInterface $credentials): ?\NixPHP\Auth\Identity\IdentityInterface
+            {
+                return null;
+            }
+        });
+
+        self::assertNull($this->auth->load('database', '42'));
+    }
+
+    public function testTheRegistryKnowsItsOwnSources(): void
+    {
+        self::assertSame([], $this->auth->providers());
+
+        $this->withBoth();
+
+        self::assertSame(['database', 'ldap'], $this->auth->providers());
+    }
+
+    public function testASourceAddedImperativelyCountsToo(): void
+    {
+        $this->auth->addProvider('database', $this->database);
+
+        // Configuration is one way in, not the only one, so nobody should be
+        // reading the configuration to find out what is registered.
+        $this->auth->addProvider('invites', new ProviderSpy(new Identity('7')));
+
+        self::assertSame(['database', 'invites'], $this->auth->providers());
+    }
 }
