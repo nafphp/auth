@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures;
 
-use NixPHP\Auth\Credentials\{CredentialsInterface, PasswordCredentials};
-use NixPHP\Auth\Identity\IdentityInterface;
-use NixPHP\Auth\Provider\ProviderInterface;
+use Naf\Auth\Credentials\{CredentialsInterface, PasswordCredentials};
+use Naf\Auth\Identity\IdentityInterface;
+use Naf\Auth\Provider\ProviderInterface;
 
 final class ProviderSpy implements ProviderInterface
 {

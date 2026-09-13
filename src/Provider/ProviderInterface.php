@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace NixPHP\Auth\Provider;
+namespace Naf\Auth\Provider;
 
-use NixPHP\Auth\Credentials\CredentialsInterface;
-use NixPHP\Auth\Identity\IdentityInterface;
+use Naf\Auth\Credentials\CredentialsInterface;
+use Naf\Auth\Identity\IdentityInterface;
 
 /**
  * Where your accounts live.

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace NixPHP\Auth\Identity;
+namespace Naf\Auth\Identity;
 
 /**
  * Your user model, as every way of signing in sees it.

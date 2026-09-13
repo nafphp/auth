@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace NixPHP\Auth\Credentials;
+namespace Naf\Auth\Credentials;
 
 /**
  * Whatever a provider needs to prove who somebody is.

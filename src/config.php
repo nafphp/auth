@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 return ['auth' => [
-    // null persists when nixphp/session is installed; true requires it, false disables it.
+    // null persists when naf/session is installed; true requires it, false disables it.
     'session' => null,
 
     /*
@@ -19,7 +19,7 @@ return ['auth' => [
     'users' => [
         'model' => null,
 
-        // 'orm' uses nixphp/orm. Anything else needs auth:providers below.
+        // 'orm' uses naf/orm. Anything else needs auth:providers below.
         'store' => 'orm',
 
         'username_field'   => 'username',

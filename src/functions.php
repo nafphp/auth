@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace NixPHP\Auth;
+namespace Naf\Auth;
 
-use function NixPHP\app;
+use function Naf\app;
 
 /** The shared manager registered by the plugin bootstrap. */
 function auth(): Auth

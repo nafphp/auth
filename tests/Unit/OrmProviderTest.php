@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Tests\Unit;
 
 use LogicException;
-use NixPHP\Auth\Auth;
-use NixPHP\Auth\Credentials\PasswordCredentials;
-use NixPHP\Auth\Provider\OrmProvider;
-use NixPHP\Auth\Support\PasswordHasher;
-use NixPHP\ORM\Core\EntityManager;
+use Naf\Auth\Auth;
+use Naf\Auth\Credentials\PasswordCredentials;
+use Naf\Auth\Provider\OrmProvider;
+use Naf\Auth\Support\PasswordHasher;
+use Naf\ORM\Core\EntityManager;
 use PDO;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\{User, UserRepository, PlainUser, PlainUserRepository, StrangerUserRepository};

@@ -6,11 +6,11 @@ namespace Tests\Unit;
 
 use InvalidArgumentException;
 use LogicException;
-use NixPHP\Auth\Auth;
-use NixPHP\Auth\Credentials\PasswordCredentials;
-use NixPHP\Auth\Identity\{Identity, IdentityInterface};
-use NixPHP\Auth\Provider\DatabaseProvider;
-use NixPHP\Auth\Support\PasswordHasher;
+use Naf\Auth\Auth;
+use Naf\Auth\Credentials\PasswordCredentials;
+use Naf\Auth\Identity\{Identity, IdentityInterface};
+use Naf\Auth\Provider\DatabaseProvider;
+use Naf\Auth\Support\PasswordHasher;
 use PDO;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;

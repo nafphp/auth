@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures;
 
-use NixPHP\Auth\Session\StateStoreInterface;
+use Naf\Auth\Session\StateStoreInterface;
 
 final class MemoryStore implements StateStoreInterface
 {

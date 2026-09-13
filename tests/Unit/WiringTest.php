@@ -4,22 +4,22 @@ declare(strict_types=1);
 
 namespace Tests\Unit;
 
-use NixPHP\Auth\Auth;
-use NixPHP\Auth\Credentials\PasswordCredentials;
-use NixPHP\Auth\Exceptions\{ForbiddenException, UnauthenticatedException};
-use NixPHP\Auth\Identity\Identity;
-use NixPHP\Auth\Provider\{DatabaseProvider, OrmProvider};
-use NixPHP\Auth\Session\{SessionStateStore, StateStoreInterface};
-use NixPHP\Auth\Support\PasswordHasher;
-use NixPHP\Core\{Config, ErrorHandler};
-use NixPHP\ORM\Core\EntityManager;
-use NixPHP\ORM\Repository\RepositoryFactory;
-use NixPHP\Session\Core\Session;
+use Naf\Auth\Auth;
+use Naf\Auth\Credentials\PasswordCredentials;
+use Naf\Auth\Exceptions\{ForbiddenException, UnauthenticatedException};
+use Naf\Auth\Identity\Identity;
+use Naf\Auth\Provider\{DatabaseProvider, OrmProvider};
+use Naf\Auth\Session\{SessionStateStore, StateStoreInterface};
+use Naf\Auth\Support\PasswordHasher;
+use Naf\Core\{Config, ErrorHandler};
+use Naf\ORM\Core\EntityManager;
+use Naf\ORM\Repository\RepositoryFactory;
+use Naf\Session\Core\Session;
 use PDO;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\{MemoryStore, ProviderSpy, User, UserRepository};
-use function NixPHP\app;
-use function NixPHP\Auth\auth;
+use function Naf\app;
+use function Naf\Auth\auth;
 
 final class WiringTest extends TestCase
 {

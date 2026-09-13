@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Tests\Unit;
 
 use InvalidArgumentException;
-use NixPHP\Auth\Auth;
-use NixPHP\Auth\Credentials\PasswordCredentials;
-use NixPHP\Auth\Identity\Identity;
-use NixPHP\Auth\Identity\UserProfile;
+use Naf\Auth\Auth;
+use Naf\Auth\Credentials\PasswordCredentials;
+use Naf\Auth\Identity\Identity;
+use Naf\Auth\Identity\UserProfile;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\{Member, MemoryStore, ProviderSpy};
 

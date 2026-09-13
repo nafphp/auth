@@ -62,7 +62,7 @@ identifier. Never the model, never the grants.
 - `SessionStateStore` receives its session through constructor injection. The bootstrap creates
   the store lazily when the manager needs persistence. No service starts a session in its constructor.
 - The manager factory prefers a custom `StateStoreInterface` binding, then honours `auth:session`:
-  false disables persistence, null enables it when `nixphp/session` is installed, true requires it.
+  false disables persistence, null enables it when `naf/session` is installed, true requires it.
 
 ## Wiring
 
@@ -105,7 +105,7 @@ carry the same value as their exception code and stay usable outside HTTP.
 Password policy, rate limiting, lockout, MFA and invitation flows are account-lifecycle decisions.
 Business rules such as last-admin protection or delegation caps belong in policies, next to the
 mutation they guard. The session adapter inherits the storage and cookie guarantees of
-`nixphp/session`; there is no token revocation store and no distributed limiter here.
+`naf/session`; there is no token revocation store and no distributed limiter here.
 
 ## Plain PDO accounts
 

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace NixPHP\Auth\Session;
+namespace Naf\Auth\Session;
 
 /**
  * How a login survives the next request.

@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace NixPHP\Auth\Session;
+namespace Naf\Auth\Session;
 
-use NixPHP\Session\Core\Session;
+use Naf\Session\Core\Session;
 use RuntimeException;
 
-/** Keeps the login in the injected nixphp/session session. */
+/** Keeps the login in the injected naf/session session. */
 class SessionStateStore implements StateStoreInterface
 {
     public function __construct(private readonly Session $session, private readonly string $key = 'auth') {}

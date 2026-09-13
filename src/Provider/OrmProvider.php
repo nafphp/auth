@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace NixPHP\Auth\Provider;
+namespace Naf\Auth\Provider;
 
 use LogicException;
-use NixPHP\Auth\Identity\IdentityInterface;
-use NixPHP\Auth\Support\PasswordHasher;
-use NixPHP\ORM\Core\EntityInterface;
-use NixPHP\ORM\Core\EntityManager;
-use NixPHP\ORM\Repository\AbstractRepository;
+use Naf\Auth\Identity\IdentityInterface;
+use Naf\Auth\Support\PasswordHasher;
+use Naf\ORM\Core\EntityInterface;
+use Naf\ORM\Core\EntityManager;
+use Naf\ORM\Repository\AbstractRepository;
 
 /**
- * Accounts stored with nixphp/orm.
+ * Accounts stored with naf/orm.
  *
  * Point it at the repository that returns your user model and it covers both
  * provider questions: login looks the account up by its username column,
@@ -20,7 +20,7 @@ use NixPHP\ORM\Repository\AbstractRepository;
  * implement IdentityInterface — that is what keeps `auth()->user()` returning
  * your own class with your own getters.
  *
- * Requires nixphp/orm. Everything else about your schema stays yours: name the
+ * Requires naf/orm. Everything else about your schema stays yours: name the
  * columns in the constructor.
  */
 final class OrmProvider extends PasswordProvider

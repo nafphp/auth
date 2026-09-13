@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-use NixPHP\Auth\Auth;
-use NixPHP\Auth\Identity\Identity;
-use NixPHP\Auth\Provider\{DatabaseProvider, ModelRepository, OrmProvider};
-use NixPHP\Auth\Session\{SessionStateStore, StateStoreInterface};
-use NixPHP\Auth\Support\PasswordHasher;
-use NixPHP\ORM\Core\EntityInterface;
-use NixPHP\ORM\Core\EntityManager;
-use NixPHP\ORM\Repository\{AbstractRepository, RepositoryFactory};
-use NixPHP\Session\Core\Session;
-use function NixPHP\app;
-use function NixPHP\config;
+use Naf\Auth\Auth;
+use Naf\Auth\Identity\Identity;
+use Naf\Auth\Provider\{DatabaseProvider, ModelRepository, OrmProvider};
+use Naf\Auth\Session\{SessionStateStore, StateStoreInterface};
+use Naf\Auth\Support\PasswordHasher;
+use Naf\ORM\Core\EntityInterface;
+use Naf\ORM\Core\EntityManager;
+use Naf\ORM\Repository\{AbstractRepository, RepositoryFactory};
+use Naf\Session\Core\Session;
+use function Naf\app;
+use function Naf\config;
 
 $container = app()->container();
 
@@ -84,10 +84,10 @@ if (!$container->has(Auth::class)) {
         if ($container->has(StateStoreInterface::class)) {
             $store = $container->get(StateStoreInterface::class);
         } elseif (config('auth:session') !== false) {
-            if (app()->hasPlugin('nixphp/session')) {
+            if (app()->hasPlugin('naf/session')) {
                 $store = $container->get(SessionStateStore::class);
             } elseif (config('auth:session') === true) {
-                throw new RuntimeException('auth:session is on, but nixphp/session is not installed. Run "composer require nixphp/session".');
+                throw new RuntimeException('auth:session is on, but naf/session is not installed. Run "composer require naf/session".');
             }
         }
 

@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace NixPHP\Auth;
+namespace Naf\Auth;
 
 use BackedEnum;
 use Closure;
 use InvalidArgumentException;
 use LogicException;
-use NixPHP\Auth\Credentials\CredentialsInterface;
-use NixPHP\Auth\Exceptions\{ForbiddenException, UnauthenticatedException};
-use NixPHP\Auth\Identity\IdentityInterface;
-use NixPHP\Auth\Identity\UserInterface;
-use NixPHP\Auth\Provider\ProviderInterface;
-use NixPHP\Auth\Session\StateStoreInterface;
+use Naf\Auth\Credentials\CredentialsInterface;
+use Naf\Auth\Exceptions\{ForbiddenException, UnauthenticatedException};
+use Naf\Auth\Identity\IdentityInterface;
+use Naf\Auth\Identity\UserInterface;
+use Naf\Auth\Provider\ProviderInterface;
+use Naf\Auth\Session\StateStoreInterface;
 use UnexpectedValueException;
 
 /**

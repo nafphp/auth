@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace NixPHP\Auth\Provider;
+namespace Naf\Auth\Provider;
 
-use NixPHP\ORM\Core\EntityInterface;
-use NixPHP\ORM\Core\EntityManager;
-use NixPHP\ORM\Repository\AbstractRepository;
+use Naf\ORM\Core\EntityInterface;
+use Naf\ORM\Core\EntityManager;
+use Naf\ORM\Repository\AbstractRepository;
 use PDO;
 
 /**

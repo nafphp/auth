@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Unit;
 
-use NixPHP\Auth\Auth;
-use NixPHP\Auth\Credentials\PasswordCredentials;
-use NixPHP\Auth\Identity\Identity;
-use NixPHP\Auth\Session\SessionStateStore;
-use NixPHP\Session\Core\Session;
+use Naf\Auth\Auth;
+use Naf\Auth\Credentials\PasswordCredentials;
+use Naf\Auth\Identity\Identity;
+use Naf\Auth\Session\SessionStateStore;
+use Naf\Session\Core\Session;
 use PHPUnit\Framework\Attributes\{PreserveGlobalState, RunTestsInSeparateProcesses};
 use PHPUnit\Framework\TestCase;
 use RuntimeException;

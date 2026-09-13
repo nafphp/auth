@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace NixPHP\Auth\Provider;
+namespace Naf\Auth\Provider;
 
-use NixPHP\Auth\Credentials\{CredentialsInterface, PasswordCredentials};
-use NixPHP\Auth\Identity\IdentityInterface;
-use NixPHP\Auth\Support\PasswordHasher;
+use Naf\Auth\Credentials\{CredentialsInterface, PasswordCredentials};
+use Naf\Auth\Identity\IdentityInterface;
+use Naf\Auth\Support\PasswordHasher;
 
 /**
  * Base class for the usual case: usernames and hashed passwords you store yourself.

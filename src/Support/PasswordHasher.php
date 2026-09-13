@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace NixPHP\Auth\Support;
+namespace Naf\Auth\Support;
 
 /**
  * Password hashing for providers that verify passwords themselves.

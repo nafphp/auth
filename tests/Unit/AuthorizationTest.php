@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Unit;
 
-use NixPHP\Auth\Auth;
-use NixPHP\Auth\Exceptions\{ForbiddenException, UnauthenticatedException};
-use NixPHP\Auth\Identity\{Identity, IdentityInterface};
+use Naf\Auth\Auth;
+use Naf\Auth\Exceptions\{ForbiddenException, UnauthenticatedException};
+use Naf\Auth\Identity\{Identity, IdentityInterface};
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\{CountingIdentity, Permission};
 

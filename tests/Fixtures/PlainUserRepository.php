@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures;
 
-use NixPHP\ORM\Repository\AbstractRepository;
+use Naf\ORM\Repository\AbstractRepository;
 
 final class PlainUserRepository extends AbstractRepository
 {

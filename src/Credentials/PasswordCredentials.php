@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace NixPHP\Auth\Credentials;
+namespace Naf\Auth\Credentials;
 
 final readonly class PasswordCredentials implements CredentialsInterface
 {

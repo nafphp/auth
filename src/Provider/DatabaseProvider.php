@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace NixPHP\Auth\Provider;
+namespace Naf\Auth\Provider;
 
 use Closure;
 use InvalidArgumentException;
 use LogicException;
-use NixPHP\Auth\Identity\IdentityInterface;
-use NixPHP\Auth\Support\PasswordHasher;
+use Naf\Auth\Identity\IdentityInterface;
+use Naf\Auth\Support\PasswordHasher;
 use PDO;
 use PDOStatement;
 use RuntimeException;

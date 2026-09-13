@@ -6,10 +6,10 @@ namespace Tests\Unit;
 
 use InvalidArgumentException;
 use LogicException;
-use NixPHP\Auth\Auth;
-use NixPHP\Auth\Credentials\PasswordCredentials;
-use NixPHP\Auth\Identity\Identity;
-use NixPHP\Auth\Provider\ProviderInterface;
+use Naf\Auth\Auth;
+use Naf\Auth\Credentials\PasswordCredentials;
+use Naf\Auth\Identity\Identity;
+use Naf\Auth\Provider\ProviderInterface;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\{MemoryStore, ProviderSpy};
 
@@ -144,11 +144,11 @@ final class AuthTest extends TestCase
     public function testASourceHandingBackSomebodyElseIsRejected(): void
     {
         $swapping = new class implements ProviderInterface {
-            public function find(string $identifier): ?\NixPHP\Auth\Identity\IdentityInterface
+            public function find(string $identifier): ?\Naf\Auth\Identity\IdentityInterface
             {
                 return new Identity('99');
             }
-            public function authenticate(#[\SensitiveParameter] \NixPHP\Auth\Credentials\CredentialsInterface $credentials): ?\NixPHP\Auth\Identity\IdentityInterface
+            public function authenticate(#[\SensitiveParameter] \Naf\Auth\Credentials\CredentialsInterface $credentials): ?\Naf\Auth\Identity\IdentityInterface
             {
                 return null;
             }
@@ -211,7 +211,7 @@ final class AuthTest extends TestCase
 
     public function testAnEmptyIdentifierCannotSignIn(): void
     {
-        $identity = new class implements \NixPHP\Auth\Identity\IdentityInterface {
+        $identity = new class implements \Naf\Auth\Identity\IdentityInterface {
             public function getIdentifier(): string { return ''; }
             public function getRoles(): iterable { return []; }
             public function getPermissions(): iterable { return []; }
@@ -279,8 +279,8 @@ final class AuthTest extends TestCase
     public function testAProviderOutageIsNotABadPassword(): void
     {
         $broken = new class implements ProviderInterface {
-            public function find(string $identifier): ?\NixPHP\Auth\Identity\IdentityInterface { return null; }
-            public function authenticate(#[\SensitiveParameter] \NixPHP\Auth\Credentials\CredentialsInterface $credentials): ?\NixPHP\Auth\Identity\IdentityInterface
+            public function find(string $identifier): ?\Naf\Auth\Identity\IdentityInterface { return null; }
+            public function authenticate(#[\SensitiveParameter] \Naf\Auth\Credentials\CredentialsInterface $credentials): ?\Naf\Auth\Identity\IdentityInterface
             {
                 throw new \RuntimeException('LDAP is down.');
             }
@@ -340,11 +340,11 @@ final class AuthTest extends TestCase
     public function testLoadRejectsASourceHandingBackSomebodyElse(): void
     {
         $this->auth->addProvider('database', new class implements ProviderInterface {
-            public function find(string $identifier): ?\NixPHP\Auth\Identity\IdentityInterface
+            public function find(string $identifier): ?\Naf\Auth\Identity\IdentityInterface
             {
                 return new Identity('99');
             }
-            public function authenticate(#[\SensitiveParameter] \NixPHP\Auth\Credentials\CredentialsInterface $credentials): ?\NixPHP\Auth\Identity\IdentityInterface
+            public function authenticate(#[\SensitiveParameter] \Naf\Auth\Credentials\CredentialsInterface $credentials): ?\Naf\Auth\Identity\IdentityInterface
             {
                 return null;
             }

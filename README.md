@@ -1,16 +1,16 @@
 <div align="center">
 
-![NixPHP](https://nixphp.github.io/docs/assets/nixphp-logo-small-square.png)
+![NAF](assets/naf-logo-small-square.png)
 
-[![NixPHP Auth Plugin](https://github.com/nixphp/auth/actions/workflows/php.yml/badge.svg)](https://github.com/nixphp/auth/actions/workflows/php.yml)
+[![NAF Auth Plugin](https://github.com/nafphp/auth/actions/workflows/php.yml/badge.svg)](https://github.com/nafphp/auth/actions/workflows/php.yml)
 
 </div>
 
-[← Back to NixPHP](https://github.com/nixphp/framework)
+[← Back to NAF](https://github.com/nafphp/framework)
 
 ---
 
-# nixphp/auth
+# naf/auth
 
 > **Log people in, and check what they may do — with your own user model.**
 
@@ -21,7 +21,7 @@ auth()->can('posts.edit');                                        // bool, guest
 auth()->requireRole('admin');                                     // or a 403 leaves the controller
 ```
 
-> 🧩 Part of the official NixPHP plugin collection.
+> 🧩 Part of the official NAF plugin collection.
 > Install it when you need logins, and nothing else.
 
 ---
@@ -35,7 +35,7 @@ It answers two questions and owns nothing else:
 
 It brings **no user table, no ORM and no opinion about where your accounts live**. That is deliberate:
 your accounts may be rows in a database, entries in a directory, or records behind an API. The piece
-that knows which is called a **provider**, and this plugin ships one for `nixphp/orm` — see
+that knows which is called a **provider**, and this plugin ships one for `naf/orm` — see
 [Quickstart](#quickstart). For anything else you write about twenty lines yourself.
 
 ### The whole picture
@@ -64,7 +64,7 @@ Four moving parts, and you own two of them:
 | **User model** | you | Any class of yours that implements `IdentityInterface`. `auth()->user()` hands it straight back. |
 | **Provider** | you, `OrmProvider`, or `DatabaseProvider` | Knows where accounts live: verify credentials, reload an account by identifier. |
 | **`auth()`** | this plugin | The one object you call. Signs people in and out and answers every permission question. |
-| **Store** | this plugin | Writes those two values into the `nixphp/session` session. Nothing else is persisted. |
+| **Store** | this plugin | Writes those two values into the `naf/session` session. Nothing else is persisted. |
 
 Because only the provider name and the identifier are stored, **every request reloads the account
 through your provider**. A deleted, locked or demoted user is a guest again on their very next
@@ -75,16 +75,16 @@ click — permissions can never go stale.
 ## 📥 Installation
 
 ```bash
-composer require nixphp/auth
+composer require naf/auth
 ```
 
-Add `nixphp/session` so logins survive the next request:
+Add `naf/session` so logins survive the next request:
 
 ```bash
-composer require nixphp/session
+composer require naf/session
 ```
 
-Nothing to configure. PHP 8.3+ and NixPHP framework ^0.1.
+Nothing to configure. PHP 8.3+ and NAF framework ^0.1.
 
 ---
 
@@ -110,8 +110,8 @@ Columns are yours to name — the provider is told which is which in step 3.
 One interface, five methods. Everything else on the class stays yours.
 
 ```php
-use NixPHP\Auth\Identity\{UserInterface, UserProfile};
-use NixPHP\ORM\Model\AbstractModel;
+use Naf\Auth\Identity\{UserInterface, UserProfile};
+use Naf\ORM\Model\AbstractModel;
 
 class User extends AbstractModel implements UserInterface
 {
@@ -198,12 +198,12 @@ An application written against this keeps working unchanged, including the sourc
 
 ### Without an ORM: plain PDO
 
-Register your existing PDO connection in your application's bootstrap. No `nixphp/database`
-or `nixphp/orm` is needed:
+Register your existing PDO connection in your application's bootstrap. No `naf/database`
+or `naf/orm` is needed:
 
 ```php
 // Application bootstrap: $pdo is your configured connection.
-use function NixPHP\app;
+use function Naf\app;
 
 app()->container()->set(PDO::class, $pdo);
 ```
@@ -212,7 +212,7 @@ Select the provider and, optionally, change its table and columns:
 
 ```php
 // app/config.php
-use NixPHP\Auth\Provider\DatabaseProvider;
+use Naf\Auth\Provider\DatabaseProvider;
 
 return ['auth' => [
     'providers' => ['database' => DatabaseProvider::class],
@@ -236,7 +236,7 @@ The default factory in the bootstrap returns an `Identity` with the row's identi
 model or exclude disabled accounts, supply a mapper used for authentication **and** restoration:
 
 ```php
-use NixPHP\Auth\Identity\IdentityInterface;
+use Naf\Auth\Identity\IdentityInterface;
 
 // Add this entry to auth.database in app/config.php.
 'identity_factory' => static function (array $row): ?IdentityInterface {
@@ -259,8 +259,8 @@ password resets. No schema or migration is installed. Integration tests use SQLi
 ### 4. Log in
 
 ```php
-use NixPHP\Auth\Credentials\PasswordCredentials;
-use function NixPHP\Auth\auth;
+use Naf\Auth\Credentials\PasswordCredentials;
+use function Naf\Auth\auth;
 
 if (!auth()->authenticate(new PasswordCredentials($username, $password))) {
     return render('login', ['error' => 'Invalid username or password.']);
@@ -323,11 +323,11 @@ auth()->requireRole('admin');
 ```
 
 A guest raises `UnauthenticatedException` (401), a signed-in person without the grant raises
-`ForbiddenException` (403). Left alone, NixPHP renders its own 401 and 403 pages. Catch them when
+`ForbiddenException` (403). Left alone, NAF renders its own 401 and 403 pages. Catch them when
 you want something else:
 
 ```php
-use NixPHP\Auth\Exceptions\{ForbiddenException, UnauthenticatedException};
+use Naf\Auth\Exceptions\{ForbiddenException, UnauthenticatedException};
 
 try {
     auth()->requirePermission('posts.edit');
@@ -374,7 +374,7 @@ The exact class wins, then its nearest registered parent.
 
 ## Sessions
 
-With `nixphp/session` installed, a successful login is remembered and the session ID is rotated —
+With `naf/session` installed, a successful login is remembered and the session ID is rotated —
 a login that cannot rotate its ID is aborted rather than published. Only two values are stored:
 
 ```php
@@ -392,7 +392,7 @@ return ['auth' => ['session' => false]];
 ```
 
 `true` demands the session plugin instead of quietly degrading to a login that is gone on the next
-click; the default (`null`) persists as soon as `nixphp/session` is installed. Bind your own
+click; the default (`null`) persists as soon as `naf/session` is installed. Bind your own
 `StateStoreInterface` to store the record somewhere else entirely.
 
 ---
@@ -459,9 +459,9 @@ yourself, extend `PasswordProvider` and the verification, the timing-safe reject
 accounts and the rehashing are already handled:
 
 ```php
-use NixPHP\Auth\Identity\IdentityInterface;
-use NixPHP\Auth\Provider\PasswordProvider;
-use NixPHP\Auth\Support\PasswordHasher;
+use Naf\Auth\Identity\IdentityInterface;
+use Naf\Auth\Provider\PasswordProvider;
+use Naf\Auth\Support\PasswordHasher;
 
 final class ApiUserProvider extends PasswordProvider
 {
@@ -549,10 +549,10 @@ Everything the plugin exposes.
 | `Provider` | `ProviderInterface` | `authenticate()` and `find()`. |
 | `Provider` | `PasswordProvider` | Base class for stored password hashes. |
 | `Provider` | `DatabaseProvider` | Accounts accessed through an existing PDO connection. |
-| `Provider` | `OrmProvider` | Accounts stored with `nixphp/orm`. |
+| `Provider` | `OrmProvider` | Accounts stored with `naf/orm`. |
 | `Provider` | `ModelRepository` | A repository built from a model class, so you need not write an empty one. |
 | `Session` | `StateStoreInterface` | Read, write and clear the two persisted values. |
-| `Session` | `SessionStateStore` | The `nixphp/session` implementation, with ID rotation. |
+| `Session` | `SessionStateStore` | The `naf/session` implementation, with ID rotation. |
 | `Support` | `PasswordHasher` | Hashing, rehash detection, decoy verification. |
 | `Exceptions` | `UnauthenticatedException` | 401. |
 | `Exceptions` | `ForbiddenException` | 403. |

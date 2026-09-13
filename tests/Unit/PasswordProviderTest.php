@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Unit;
 
-use NixPHP\Auth\Credentials\{CredentialsInterface, PasswordCredentials};
-use NixPHP\Auth\Identity\{Identity, IdentityInterface};
-use NixPHP\Auth\Provider\PasswordProvider;
-use NixPHP\Auth\Support\PasswordHasher;
+use Naf\Auth\Credentials\{CredentialsInterface, PasswordCredentials};
+use Naf\Auth\Identity\{Identity, IdentityInterface};
+use Naf\Auth\Provider\PasswordProvider;
+use Naf\Auth\Support\PasswordHasher;
 use PHPUnit\Framework\TestCase;
 use ReflectionProperty;
 

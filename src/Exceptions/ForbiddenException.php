@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace NixPHP\Auth\Exceptions;
+namespace Naf\Auth\Exceptions;
 
 class ForbiddenException extends \RuntimeException
 {

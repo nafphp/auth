@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures;
 
-use NixPHP\Auth\Identity\IdentityInterface;
-use NixPHP\ORM\Model\AbstractModel;
+use Naf\Auth\Identity\IdentityInterface;
+use Naf\ORM\Model\AbstractModel;
 
 /** Exactly what the README asks of an ORM model: one interface, three methods. */
 class User extends AbstractModel implements IdentityInterface

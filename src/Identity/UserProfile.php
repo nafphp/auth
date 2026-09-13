@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace NixPHP\Auth\Identity;
+namespace Naf\Auth\Identity;
 
 /**
  * The three things about a person this framework is willing to pass on.

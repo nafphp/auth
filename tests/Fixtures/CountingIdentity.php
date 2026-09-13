@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures;
 
-use NixPHP\Auth\Identity\IdentityInterface;
+use Naf\Auth\Identity\IdentityInterface;
 
 /** Counts how often the grants are asked for, and hands them back as a generator. */
 final class CountingIdentity implements IdentityInterface
