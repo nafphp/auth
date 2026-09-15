@@ -7,11 +7,17 @@ namespace Tests\Unit;
 use InvalidArgumentException;
 use LogicException;
 use Naf\Auth\Auth;
+use Naf\Auth\Credentials\CredentialsInterface;
 use Naf\Auth\Credentials\PasswordCredentials;
 use Naf\Auth\Identity\Identity;
+use Naf\Auth\Identity\IdentityInterface;
 use Naf\Auth\Provider\ProviderInterface;
 use PHPUnit\Framework\TestCase;
-use Tests\Fixtures\{MemoryStore, ProviderSpy};
+use RuntimeException;
+use SensitiveParameter;
+use stdClass;
+use Tests\Fixtures\MemoryStore;
+use Tests\Fixtures\ProviderSpy;
 
 /** Registering sources, signing in and out, and restoring a login from the store. */
 final class AuthTest extends TestCase
@@ -144,11 +150,12 @@ final class AuthTest extends TestCase
     public function testASourceHandingBackSomebodyElseIsRejected(): void
     {
         $swapping = new class implements ProviderInterface {
-            public function find(string $identifier): ?\Naf\Auth\Identity\IdentityInterface
+            public function find(string $identifier): ?IdentityInterface
             {
                 return new Identity('99');
             }
-            public function authenticate(#[\SensitiveParameter] \Naf\Auth\Credentials\CredentialsInterface $credentials): ?\Naf\Auth\Identity\IdentityInterface
+
+            public function authenticate(#[SensitiveParameter] CredentialsInterface $credentials): ?IdentityInterface
             {
                 return null;
             }
@@ -211,10 +218,21 @@ final class AuthTest extends TestCase
 
     public function testAnEmptyIdentifierCannotSignIn(): void
     {
-        $identity = new class implements \Naf\Auth\Identity\IdentityInterface {
-            public function getIdentifier(): string { return ''; }
-            public function getRoles(): iterable { return []; }
-            public function getPermissions(): iterable { return []; }
+        $identity = new class implements IdentityInterface {
+            public function getIdentifier(): string
+            {
+                return '';
+            }
+
+            public function getRoles(): iterable
+            {
+                return [];
+            }
+
+            public function getPermissions(): iterable
+            {
+                return [];
+            }
         };
 
         $this->expectException(InvalidArgumentException::class);
@@ -237,6 +255,7 @@ final class AuthTest extends TestCase
         $auth  = new Auth($this->store, function (string $class) use (&$built, $spy): object {
             $built++;
             self::assertSame(ProviderSpy::class, $class);
+
             return $spy;
         });
         $auth->addProvider('database', ProviderSpy::class);
@@ -253,10 +272,10 @@ final class AuthTest extends TestCase
         $this->auth->addProvider('database', $this->database);
 
         $cases = [
-            'empty name'    => fn() => $this->auth->addProvider('  ', $this->database),
-            'duplicate'     => fn() => $this->auth->addProvider('database', $this->ldap),
-            'wrong class'   => fn() => $this->auth->addProvider('other', \stdClass::class),
-            'unknown name'  => fn() => $this->auth->authenticate(new PasswordCredentials('a', 'valid'), 'nope'),
+            'empty name'   => fn() => $this->auth->addProvider('  ', $this->database),
+            'duplicate'    => fn() => $this->auth->addProvider('database', $this->ldap),
+            'wrong class'  => fn() => $this->auth->addProvider('other', stdClass::class),
+            'unknown name' => fn() => $this->auth->authenticate(new PasswordCredentials('a', 'valid'), 'nope'),
         ];
 
         foreach ($cases as $label => $case) {
@@ -279,15 +298,19 @@ final class AuthTest extends TestCase
     public function testAProviderOutageIsNotABadPassword(): void
     {
         $broken = new class implements ProviderInterface {
-            public function find(string $identifier): ?\Naf\Auth\Identity\IdentityInterface { return null; }
-            public function authenticate(#[\SensitiveParameter] \Naf\Auth\Credentials\CredentialsInterface $credentials): ?\Naf\Auth\Identity\IdentityInterface
+            public function find(string $identifier): ?IdentityInterface
             {
-                throw new \RuntimeException('LDAP is down.');
+                return null;
+            }
+
+            public function authenticate(#[SensitiveParameter] CredentialsInterface $credentials): ?IdentityInterface
+            {
+                throw new RuntimeException('LDAP is down.');
             }
         };
         $this->auth->addProvider('ldap', $broken);
 
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(RuntimeException::class);
         $this->auth->authenticate(new PasswordCredentials('alice', 'valid'));
     }
 
@@ -340,11 +363,12 @@ final class AuthTest extends TestCase
     public function testLoadRejectsASourceHandingBackSomebodyElse(): void
     {
         $this->auth->addProvider('database', new class implements ProviderInterface {
-            public function find(string $identifier): ?\Naf\Auth\Identity\IdentityInterface
+            public function find(string $identifier): ?IdentityInterface
             {
                 return new Identity('99');
             }
-            public function authenticate(#[\SensitiveParameter] \Naf\Auth\Credentials\CredentialsInterface $credentials): ?\Naf\Auth\Identity\IdentityInterface
+
+            public function authenticate(#[SensitiveParameter] CredentialsInterface $credentials): ?IdentityInterface
             {
                 return null;
             }

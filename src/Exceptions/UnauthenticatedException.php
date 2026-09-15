@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Naf\Auth\Exceptions;
 
-class UnauthenticatedException extends \RuntimeException
+use RuntimeException;
+
+class UnauthenticatedException extends RuntimeException
 {
     public function __construct(string $message = 'Authentication required.')
     {

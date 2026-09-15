@@ -4,31 +4,34 @@ declare(strict_types=1);
 
 namespace Tests\Unit;
 
+use Closure;
 use InvalidArgumentException;
 use LogicException;
 use Naf\Auth\Auth;
 use Naf\Auth\Credentials\PasswordCredentials;
-use Naf\Auth\Identity\{Identity, IdentityInterface};
+use Naf\Auth\Identity\Identity;
+use Naf\Auth\Identity\IdentityInterface;
 use Naf\Auth\Provider\DatabaseProvider;
 use Naf\Auth\Support\PasswordHasher;
 use PDO;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
+use stdClass;
 use Tests\Fixtures\MemoryStore;
 
 final class DatabaseProviderTest extends TestCase
 {
     private PDO $pdo;
     private PasswordHasher $hasher;
-    private \Closure $identityFactory;
+    private Closure $identityFactory;
 
     protected function setUp(): void
     {
         $this->identityFactory = static fn(array $row) => new Identity((string) $row['id']);
-        $this->pdo = new PDO('sqlite::memory:');
+        $this->pdo             = new PDO('sqlite::memory:');
         $this->pdo->exec('CREATE TABLE users (id INTEGER PRIMARY KEY, username TEXT, password TEXT, enabled INTEGER DEFAULT 1)');
         $this->hasher = new PasswordHasher(PASSWORD_BCRYPT, ['cost' => 4]);
-        $statement = $this->pdo->prepare('INSERT INTO users (id, username, password) VALUES (7, ?, ?)');
+        $statement    = $this->pdo->prepare('INSERT INTO users (id, username, password) VALUES (7, ?, ?)');
         $statement->execute(['alice', $this->hasher->hash('correct')]);
     }
 
@@ -54,9 +57,9 @@ final class DatabaseProviderTest extends TestCase
 
     public function testFindReloadsAndDeletedAccountsClearAuthentication(): void
     {
-        $store = new MemoryStore();
+        $store    = new MemoryStore();
         $provider = new DatabaseProvider($this->pdo, $this->hasher, $this->identityFactory);
-        $auth = new Auth($store);
+        $auth     = new Auth($store);
         $auth->addProvider('pdo', $provider);
         self::assertTrue($auth->authenticate(new PasswordCredentials('alice', 'correct')));
         self::assertSame(['provider' => 'pdo', 'identifier' => '7'], $store->record);
@@ -76,6 +79,7 @@ final class DatabaseProviderTest extends TestCase
     {
         $provider = new DatabaseProvider($this->pdo, identityFactory: static function (array $row): IdentityInterface {
             self::assertArrayNotHasKey('password', $row);
+
             return new PdoUser((string) $row['id'], $row['username']);
         }, hasher: $this->hasher);
         $auth = new Auth();
@@ -89,8 +93,8 @@ final class DatabaseProviderTest extends TestCase
 
     public function testFactoryCanExcludeDisabledAccountsFromLoginAndRestore(): void
     {
-        $provider = new DatabaseProvider($this->pdo, identityFactory: static fn(array $row): ?IdentityInterface =>
-            (int) $row['enabled'] === 1 ? new Identity((string) $row['id']) : null, hasher: $this->hasher);
+        $provider = new DatabaseProvider($this->pdo, identityFactory: static fn(array $row): ?IdentityInterface
+            => (int) $row['enabled'] === 1 ? new Identity((string) $row['id']) : null, hasher: $this->hasher);
         self::assertNotNull($provider->find('7'));
         $this->pdo->exec('UPDATE users SET enabled = 0');
         self::assertNull($provider->find('7'));
@@ -106,7 +110,7 @@ final class DatabaseProviderTest extends TestCase
 
     public function testMappingMustReturnAnIdentity(): void
     {
-        $provider = new DatabaseProvider($this->pdo, hasher: $this->hasher, identityFactory: static fn(array $row) => new \stdClass());
+        $provider = new DatabaseProvider($this->pdo, hasher: $this->hasher, identityFactory: static fn(array $row) => new stdClass());
         $this->expectException(LogicException::class);
         $provider->find('7');
     }
@@ -143,8 +147,8 @@ final class DatabaseProviderTest extends TestCase
 
     public function testRehashOnlyUpdatesAfterSuccessfulVerification(): void
     {
-        $before = $this->pdo->query('SELECT password FROM users')->fetchColumn();
-        $hasher = new PasswordHasher(PASSWORD_BCRYPT, ['cost' => 5]);
+        $before   = $this->pdo->query('SELECT password FROM users')->fetchColumn();
+        $hasher   = new PasswordHasher(PASSWORD_BCRYPT, ['cost' => 5]);
         $provider = new DatabaseProvider($this->pdo, $hasher, $this->identityFactory);
         self::assertNull($provider->authenticate(new PasswordCredentials('alice', 'wrong')));
         self::assertSame($before, $this->pdo->query('SELECT password FROM users')->fetchColumn());
@@ -158,8 +162,9 @@ final class DatabaseProviderTest extends TestCase
     public function testRehashDoesNotOverwriteAConcurrentPasswordReset(): void
     {
         $resetHash = $this->hasher->hash('reset-password');
-        $provider = new DatabaseProvider($this->pdo, identityFactory: function (array $row) use ($resetHash): IdentityInterface {
+        $provider  = new DatabaseProvider($this->pdo, identityFactory: function (array $row) use ($resetHash): IdentityInterface {
             $this->pdo->prepare('UPDATE users SET password = ? WHERE id = 7')->execute([$resetHash]);
+
             return new Identity((string) $row['id']);
         }, hasher: new PasswordHasher(PASSWORD_BCRYPT, ['cost' => 5]));
         self::assertNotNull($provider->authenticate(new PasswordCredentials('alice', 'correct')));
@@ -177,8 +182,22 @@ final class DatabaseProviderTest extends TestCase
 
 final readonly class PdoUser implements IdentityInterface
 {
-    public function __construct(private string $id, public string $username) {}
-    public function getIdentifier(): string { return $this->id; }
-    public function getRoles(): iterable { return ['editor']; }
-    public function getPermissions(): iterable { return ['articles.edit']; }
+    public function __construct(private string $id, public string $username)
+    {
+    }
+
+    public function getIdentifier(): string
+    {
+        return $this->id;
+    }
+
+    public function getRoles(): iterable
+    {
+        return ['editor'];
+    }
+
+    public function getPermissions(): iterable
+    {
+        return ['articles.edit'];
+    }
 }

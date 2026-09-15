@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Naf\Auth\Provider;
 
-use Naf\Auth\Credentials\{CredentialsInterface, PasswordCredentials};
+use Naf\Auth\Credentials\CredentialsInterface;
+use Naf\Auth\Credentials\PasswordCredentials;
 use Naf\Auth\Identity\IdentityInterface;
 use Naf\Auth\Support\PasswordHasher;
+use SensitiveParameter;
 
 /**
  * Base class for the usual case: usernames and hashed passwords you store yourself.
@@ -17,7 +19,9 @@ use Naf\Auth\Support\PasswordHasher;
  */
 abstract class PasswordProvider implements ProviderInterface
 {
-    public function __construct(protected readonly PasswordHasher $hasher) {}
+    public function __construct(protected readonly PasswordHasher $hasher)
+    {
+    }
 
     /** Look up whoever the person claims to be. Null when there is no such account. */
     abstract protected function findByUsername(string $username): ?IdentityInterface;
@@ -32,7 +36,7 @@ abstract class PasswordProvider implements ProviderInterface
     {
     }
 
-    final public function authenticate(#[\SensitiveParameter] CredentialsInterface $credentials): ?IdentityInterface
+    final public function authenticate(#[SensitiveParameter] CredentialsInterface $credentials): ?IdentityInterface
     {
         if (!$credentials instanceof PasswordCredentials) {
             return null;

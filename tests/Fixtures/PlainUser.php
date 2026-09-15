@@ -14,9 +14,20 @@ class PlainUser extends AbstractModel implements IdentityInterface
 
     protected string $username = '';
     protected string $password = '';
-    protected string $roles = '';
+    protected string $roles    = '';
 
-    public function getIdentifier(): string { return (string) $this->id; }
-    public function getRoles(): iterable { return []; }
-    public function getPermissions(): iterable { return []; }
+    public function getIdentifier(): string
+    {
+        return (string) $this->id;
+    }
+
+    public function getRoles(): iterable
+    {
+        return [];
+    }
+
+    public function getPermissions(): iterable
+    {
+        return [];
+    }
 }

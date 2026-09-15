@@ -16,12 +16,28 @@ final class Member implements UserInterface
         private readonly ?string $name = 'Alice',
         private readonly ?string $email = 'alice@example.test',
         private readonly bool $emailVerified = true,
-    ) {}
+    ) {
+    }
 
-    public function getIdentifier(): string { return $this->id; }
-    public function getRoles(): iterable { return []; }
-    public function getPermissions(): iterable { return []; }
-    public function isActive(): bool { return $this->active; }
+    public function getIdentifier(): string
+    {
+        return $this->id;
+    }
+
+    public function getRoles(): iterable
+    {
+        return [];
+    }
+
+    public function getPermissions(): iterable
+    {
+        return [];
+    }
+
+    public function isActive(): bool
+    {
+        return $this->active;
+    }
 
     public function getProfile(): UserProfile
     {

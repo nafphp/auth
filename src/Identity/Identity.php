@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Naf\Auth\Identity;
 
+use BackedEnum;
 use InvalidArgumentException;
 
 /**
@@ -13,8 +14,8 @@ use InvalidArgumentException;
 final readonly class Identity implements IdentityInterface
 {
     /**
-     * @param list<string|\BackedEnum> $roles
-     * @param list<string|\BackedEnum> $permissions
+     * @param list<string|BackedEnum> $roles
+     * @param list<string|BackedEnum> $permissions
      */
     public function __construct(
         private string $identifier,
@@ -26,7 +27,18 @@ final readonly class Identity implements IdentityInterface
         }
     }
 
-    public function getIdentifier(): string { return $this->identifier; }
-    public function getRoles(): iterable { return $this->roles; }
-    public function getPermissions(): iterable { return $this->permissions; }
+    public function getIdentifier(): string
+    {
+        return $this->identifier;
+    }
+
+    public function getRoles(): iterable
+    {
+        return $this->roles;
+    }
+
+    public function getPermissions(): iterable
+    {
+        return $this->permissions;
+    }
 }

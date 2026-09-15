@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Naf\Auth\Support;
 
+use SensitiveParameter;
+
 /**
  * Password hashing for providers that verify passwords themselves.
  *
@@ -20,9 +22,10 @@ final class PasswordHasher
     public function __construct(
         private readonly string|int|null $algorithm = PASSWORD_DEFAULT,
         private readonly array $options = [],
-    ) {}
+    ) {
+    }
 
-    public function hash(#[\SensitiveParameter] string $password): string
+    public function hash(#[SensitiveParameter] string $password): string
     {
         return password_hash($password, $this->algorithm, $this->options);
     }
@@ -33,10 +36,11 @@ final class PasswordHasher
      * Pass null when the account does not exist or has no usable hash: the decoy
      * is verified instead and the answer is always false.
      */
-    public function verify(#[\SensitiveParameter] string $password, ?string $hash): bool
+    public function verify(#[SensitiveParameter] string $password, ?string $hash): bool
     {
         if ($hash === null || $hash === '') {
             password_verify($password, $this->decoy());
+
             return false;
         }
 

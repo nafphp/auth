@@ -4,13 +4,18 @@ declare(strict_types=1);
 
 use Naf\Auth\Auth;
 use Naf\Auth\Identity\Identity;
-use Naf\Auth\Provider\{DatabaseProvider, ModelRepository, OrmProvider};
-use Naf\Auth\Session\{SessionStateStore, StateStoreInterface};
+use Naf\Auth\Provider\DatabaseProvider;
+use Naf\Auth\Provider\ModelRepository;
+use Naf\Auth\Provider\OrmProvider;
+use Naf\Auth\Session\SessionStateStore;
+use Naf\Auth\Session\StateStoreInterface;
 use Naf\Auth\Support\PasswordHasher;
 use Naf\ORM\Core\EntityInterface;
 use Naf\ORM\Core\EntityManager;
-use Naf\ORM\Repository\{AbstractRepository, RepositoryFactory};
+use Naf\ORM\Repository\AbstractRepository;
+use Naf\ORM\Repository\RepositoryFactory;
 use Naf\Session\Core\Session;
+
 use function Naf\app;
 use function Naf\config;
 
@@ -63,7 +68,7 @@ if (!$container->has(OrmProvider::class)) {
             $fields = 'auth:users:';
         } else {
             throw new InvalidArgumentException(
-                'Configure auth:users:model with your user model, or auth:orm:repository with a repository class.'
+                'Configure auth:users:model with your user model, or auth:orm:repository with a repository class.',
             );
         }
 
@@ -101,7 +106,7 @@ if (!$container->has(Auth::class)) {
             $providers = ['users' => match (config('auth:users:store', 'orm')) {
                 'orm'   => OrmProvider::class,
                 default => throw new RuntimeException(
-                    'auth:users:store only understands "orm". For anything else, name the source in auth:providers.'
+                    'auth:users:store only understands "orm". For anything else, name the source in auth:providers.',
                 ),
             }];
         }

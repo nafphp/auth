@@ -10,7 +10,9 @@ use RuntimeException;
 /** Keeps the login in the injected naf/session session. */
 class SessionStateStore implements StateStoreInterface
 {
-    public function __construct(private readonly Session $session, private readonly string $key = 'auth') {}
+    public function __construct(private readonly Session $session, private readonly string $key = 'auth')
+    {
+    }
 
     public function read(): ?array
     {
@@ -24,6 +26,7 @@ class SessionStateStore implements StateStoreInterface
             || !is_string($record['provider'] ?? null) || $record['provider'] === ''
             || !is_string($record['identifier'] ?? null) || $record['identifier'] === '') {
             $this->clear();
+
             return null;
         }
 
@@ -60,5 +63,4 @@ class SessionStateStore implements StateStoreInterface
             $this->session->regenerate(0);
         }
     }
-
 }

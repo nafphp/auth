@@ -36,9 +36,9 @@ final class DatabaseProvider extends PasswordProvider
         private readonly string $identifierField = 'id',
     ) {
         parent::__construct($hasher);
-        $this->table = $this->quote($table);
-        $this->usernameColumn = $this->quote($usernameField);
-        $this->passwordColumn = $this->quote($passwordField);
+        $this->table            = $this->quote($table);
+        $this->usernameColumn   = $this->quote($usernameField);
+        $this->passwordColumn   = $this->quote($passwordField);
         $this->identifierColumn = $this->quote($identifierField);
     }
 
@@ -70,8 +70,8 @@ final class DatabaseProvider extends PasswordProvider
     private function lookup(string $column, string $value): ?IdentityInterface
     {
         $this->loadedHash = null;
-        $statement = $this->execute("SELECT * FROM {$this->table} WHERE {$column} = :value", ['value' => $value]);
-        $row = $statement->fetch(PDO::FETCH_ASSOC);
+        $statement        = $this->execute("SELECT * FROM {$this->table} WHERE {$column} = :value", ['value' => $value]);
+        $row              = $statement->fetch(PDO::FETCH_ASSOC);
         if ($row === false) {
             return null;
         }
@@ -85,7 +85,7 @@ final class DatabaseProvider extends PasswordProvider
             throw new LogicException('The account must have a non-empty string or integer identifier.');
         }
         $identifier = (string) $identifier;
-        $hash = $row[$this->passwordField] ?? null;
+        $hash       = $row[$this->passwordField] ?? null;
         unset($row[$this->passwordField]);
 
         $identity = ($this->identityFactory)($row);
@@ -97,6 +97,7 @@ final class DatabaseProvider extends PasswordProvider
         }
 
         $this->loadedHash = is_string($hash) && $hash !== '' ? $hash : null;
+
         return $identity;
     }
 
@@ -107,6 +108,7 @@ final class DatabaseProvider extends PasswordProvider
         if ($statement === false || !$statement->execute($parameters)) {
             throw new RuntimeException('Authentication database operation failed.');
         }
+
         return $statement;
     }
 
@@ -116,6 +118,7 @@ final class DatabaseProvider extends PasswordProvider
             throw new InvalidArgumentException('Use a simple table or column name: ' . $identifier);
         }
         $quote = $this->connection->getAttribute(PDO::ATTR_DRIVER_NAME) === 'mysql' ? '`' : '"';
+
         return $quote . $identifier . $quote;
     }
 }

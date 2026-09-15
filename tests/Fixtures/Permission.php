@@ -6,6 +6,6 @@ namespace Tests\Fixtures;
 
 enum Permission: string
 {
-    case PostsEdit = 'posts.edit';
+    case PostsEdit    = 'posts.edit';
     case PostsPublish = 'posts.publish';
 }
