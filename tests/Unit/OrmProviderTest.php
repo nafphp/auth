@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit;
 
+use Generator;
 use LogicException;
 use Naf\Auth\Auth;
 use Naf\Auth\Credentials\PasswordCredentials;
@@ -12,7 +13,11 @@ use Naf\Auth\Support\PasswordHasher;
 use Naf\ORM\Core\EntityManager;
 use PDO;
 use PHPUnit\Framework\TestCase;
-use Tests\Fixtures\{User, UserRepository, PlainUser, PlainUserRepository, StrangerUserRepository};
+use Tests\Fixtures\PlainUser;
+use Tests\Fixtures\PlainUserRepository;
+use Tests\Fixtures\StrangerUserRepository;
+use Tests\Fixtures\User;
+use Tests\Fixtures\UserRepository;
 
 /** The shipped provider, against a real SQLite database. */
 final class OrmProviderTest extends TestCase
@@ -36,7 +41,7 @@ final class OrmProviderTest extends TestCase
                 username TEXT NOT NULL,
                 password TEXT NOT NULL,
                 roles TEXT NOT NULL DEFAULT \'\'
-            )'
+            )',
         );
         $this->entityManager = new EntityManager($this->pdo);
     }
@@ -65,7 +70,7 @@ final class OrmProviderTest extends TestCase
 
     public function testTheNextRequestReloadsTheAccountByItsIdentifier(): void
     {
-        $id = $this->insert('alice', 'hunter2');
+        $id       = $this->insert('alice', 'hunter2');
         $provider = $this->provider();
 
         self::assertInstanceOf(User::class, $provider->find($id));
@@ -75,7 +80,7 @@ final class OrmProviderTest extends TestCase
 
     public function testADeletedAccountIsAGuestOnItsNextRequest(): void
     {
-        $id = $this->insert('alice', 'hunter2');
+        $id   = $this->insert('alice', 'hunter2');
         $auth = new Auth();
         $auth->addProvider('database', $this->provider());
         self::assertTrue($auth->authenticate(new PasswordCredentials('alice', 'hunter2')));
@@ -110,7 +115,7 @@ final class OrmProviderTest extends TestCase
 
     public function testAnOutdatedHashIsUpgradedInTheDatabase(): void
     {
-        $id = $this->insert('alice', 'hunter2', cost: 4);
+        $id     = $this->insert('alice', 'hunter2', cost: 4);
         $before = $this->storedHash($id);
 
         $provider = new OrmProvider(
@@ -156,7 +161,7 @@ final class OrmProviderTest extends TestCase
     }
 
     /** @param iterable<string> $values */
-    private function iterate(iterable $values): \Generator
+    private function iterate(iterable $values): Generator
     {
         yield from $values;
     }

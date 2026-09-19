@@ -9,11 +9,13 @@ use Closure;
 use InvalidArgumentException;
 use LogicException;
 use Naf\Auth\Credentials\CredentialsInterface;
-use Naf\Auth\Exceptions\{ForbiddenException, UnauthenticatedException};
+use Naf\Auth\Exceptions\ForbiddenException;
+use Naf\Auth\Exceptions\UnauthenticatedException;
 use Naf\Auth\Identity\IdentityInterface;
 use Naf\Auth\Identity\UserInterface;
 use Naf\Auth\Provider\ProviderInterface;
 use Naf\Auth\Session\StateStoreInterface;
+use SensitiveParameter;
 use UnexpectedValueException;
 
 /**
@@ -31,8 +33,8 @@ final class Auth
     private array $policies = [];
 
     private ?IdentityInterface $identity = null;
-    private ?string $providerName = null;
-    private bool $restored = false;
+    private ?string $providerName        = null;
+    private bool $restored               = false;
 
     /**
      * @param StateStoreInterface|null $store Null keeps the login to this request only.
@@ -41,7 +43,8 @@ final class Auth
     public function __construct(
         private readonly ?StateStoreInterface $store = null,
         private readonly ?Closure $factory = null,
-    ) {}
+    ) {
+    }
 
     // ------------------------------------------------------------------ Sources
 
@@ -123,7 +126,7 @@ final class Auth
      * False means "not these credentials" and never says which half was wrong.
      * Name the source only when several are registered.
      */
-    public function authenticate(#[\SensitiveParameter] CredentialsInterface $credentials, ?string $provider = null): bool
+    public function authenticate(#[SensitiveParameter] CredentialsInterface $credentials, ?string $provider = null): bool
     {
         $name     = $provider ?? $this->soleProvider();
         $identity = self::usable($this->provider($name)->authenticate($credentials));
@@ -376,7 +379,7 @@ final class Auth
     private function restore(): void
     {
         $this->restored = true;
-        $record = $this->store?->read();
+        $record         = $this->store?->read();
 
         if ($record === null) {
             return;
@@ -386,6 +389,7 @@ final class Auth
 
         if ($identity === null) {
             $this->store?->clear();
+
             return;
         }
 
@@ -426,7 +430,7 @@ final class Auth
         if (count($names) > 1) {
             throw new LogicException(
                 'Several providers are registered (' . implode(', ', $names)
-                . '). Name the one you mean: auth()->authenticate($credentials, \'' . $names[0] . '\').'
+                . '). Name the one you mean: auth()->authenticate($credentials, \'' . $names[0] . '\').',
             );
         }
 

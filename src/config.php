@@ -36,16 +36,16 @@ return ['auth' => [
     // Resource class => policy callback.
     'policies' => [],
     'database' => [
-        'table' => 'users',
-        'username_field' => 'username',
-        'password_field' => 'password',
+        'table'            => 'users',
+        'username_field'   => 'username',
+        'password_field'   => 'password',
         'identifier_field' => 'id',
         'identity_factory' => null,
     ],
     'orm' => [
-        'repository' => null,
-        'username_field' => 'username',
-        'password_field' => 'password',
+        'repository'       => null,
+        'username_field'   => 'username',
+        'password_field'   => 'password',
         'identifier_field' => 'id',
     ],
 ]];

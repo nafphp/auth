@@ -6,25 +6,35 @@ namespace Tests\Unit;
 
 use Naf\Auth\Auth;
 use Naf\Auth\Credentials\PasswordCredentials;
-use Naf\Auth\Exceptions\{ForbiddenException, UnauthenticatedException};
+use Naf\Auth\Exceptions\ForbiddenException;
+use Naf\Auth\Exceptions\UnauthenticatedException;
 use Naf\Auth\Identity\Identity;
-use Naf\Auth\Provider\{DatabaseProvider, OrmProvider};
-use Naf\Auth\Session\{SessionStateStore, StateStoreInterface};
+use Naf\Auth\Provider\DatabaseProvider;
+use Naf\Auth\Provider\OrmProvider;
+use Naf\Auth\Session\SessionStateStore;
+use Naf\Auth\Session\StateStoreInterface;
 use Naf\Auth\Support\PasswordHasher;
-use Naf\Core\{Config, ErrorHandler};
+use Naf\Core\Config;
+use Naf\Core\ErrorHandler;
 use Naf\ORM\Core\EntityManager;
 use Naf\ORM\Repository\RepositoryFactory;
 use Naf\Session\Core\Session;
 use PDO;
 use PHPUnit\Framework\TestCase;
-use Tests\Fixtures\{MemoryStore, ProviderSpy, User, UserRepository};
+use Psr\Container\NotFoundExceptionInterface;
+use stdClass;
+use Tests\Fixtures\MemoryStore;
+use Tests\Fixtures\ProviderSpy;
+use Tests\Fixtures\User;
+use Tests\Fixtures\UserRepository;
+
 use function Naf\app;
 use function Naf\Auth\auth;
 
 final class WiringTest extends TestCase
 {
     private array $original = [];
-    private const SERVICES = [Auth::class, StateStoreInterface::class, SessionStateStore::class,
+    private const SERVICES  = [Auth::class, StateStoreInterface::class, SessionStateStore::class,
         PasswordHasher::class, DatabaseProvider::class, OrmProvider::class, PDO::class,
         Config::class, Session::class, ProviderSpy::class, EntityManager::class, RepositoryFactory::class];
 
@@ -71,7 +81,7 @@ final class WiringTest extends TestCase
         try {
             auth();
             self::fail('The helper must not wire the plugin implicitly.');
-        } catch (\Psr\Container\NotFoundExceptionInterface) {
+        } catch (NotFoundExceptionInterface) {
             self::assertFalse(app()->container()->has(Auth::class));
         }
         $this->boot();
@@ -80,10 +90,11 @@ final class WiringTest extends TestCase
 
     public function testBootstrapIsLazyAndRepeatedBootKeepsRegistrations(): void
     {
-        $calls = 0;
+        $calls     = 0;
         $container = app()->container();
         $container->set(ProviderSpy::class, static function () use (&$calls) {
             $calls++;
+
             return new ProviderSpy(new Identity('42'));
         });
         $this->configure(['session' => false, 'providers' => ['custom' => ProviderSpy::class]]);
@@ -102,14 +113,14 @@ final class WiringTest extends TestCase
     {
         $this->configure(['session' => false, 'providers' => ['custom' => ProviderSpy::class]]);
         $this->boot();
-        $this->expectException(\Psr\Container\NotFoundExceptionInterface::class);
+        $this->expectException(NotFoundExceptionInterface::class);
         auth()->authenticate(new PasswordCredentials('alice', 'valid'));
     }
 
     public function testPoliciesAreRegisteredFromConfiguration(): void
     {
-        $this->configure(['session' => false, 'policies' => [\stdClass::class =>
-            static fn($user, $action, $post): bool => $action === 'edit' && $post->owner === $user->getIdentifier(),
+        $this->configure(['session' => false, 'policies' => [stdClass::class
+            => static fn($user, $action, $post): bool => $action === 'edit' && $post->owner === $user->getIdentifier(),
         ]]);
         $this->boot();
         auth()->setIdentity(new Identity('42'));
@@ -119,7 +130,7 @@ final class WiringTest extends TestCase
 
     public function testCustomStoreAndHasherBindingsWin(): void
     {
-        $store = new MemoryStore();
+        $store  = new MemoryStore();
         $hasher = new PasswordHasher(PASSWORD_BCRYPT, ['cost' => 4]);
         app()->container()->set(StateStoreInterface::class, $store);
         app()->container()->set(PasswordHasher::class, $hasher);
@@ -135,6 +146,7 @@ final class WiringTest extends TestCase
         $calls = 0;
         app()->container()->set(Session::class, static function () use (&$calls): Session {
             $calls++;
+
             return new Session();
         });
         $this->boot();
@@ -159,7 +171,7 @@ final class WiringTest extends TestCase
         $container->set(PasswordHasher::class, new PasswordHasher(PASSWORD_BCRYPT, ['cost' => 5]));
         $container->set(StateStoreInterface::class, new MemoryStore());
         $this->configure(['providers' => ['database' => DatabaseProvider::class], 'database' => [
-            'table' => 'accounts', 'identifier_field' => 'account_id', 'username_field' => 'email', 'password_field' => 'hash',
+            'table'            => 'accounts', 'identifier_field' => 'account_id', 'username_field' => 'email', 'password_field' => 'hash',
             'identity_factory' => static fn(array $row) => new Identity((string) $row['account_id'], ['editor']),
         ]]);
         $this->boot();
@@ -176,7 +188,7 @@ final class WiringTest extends TestCase
         $pdo->exec("CREATE TABLE accounts (account_id TEXT PRIMARY KEY, username TEXT, password TEXT)");
         $pdo->exec("INSERT INTO accounts VALUES ('opaque-id', 'alice', NULL)");
         $this->configure(['session' => false, 'providers' => ['pdo' => DatabaseProvider::class],
-            'database' => ['table' => 'accounts', 'identifier_field' => 'account_id'],
+            'database'              => ['table' => 'accounts', 'identifier_field' => 'account_id'],
         ]);
         $this->boot();
         // The connection may be registered after bootstrap and manager construction.
@@ -193,7 +205,7 @@ final class WiringTest extends TestCase
         $pdo = new PDO('sqlite::memory:', options: [PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC]);
         $pdo->exec("CREATE TABLE users (id INTEGER PRIMARY KEY, username TEXT, password TEXT, roles TEXT)");
         $pdo->prepare("INSERT INTO users VALUES (7, ?, ?, 'editor')")->execute(['alice', password_hash('correct', PASSWORD_BCRYPT, ['cost' => 4])]);
-        $manager = new EntityManager($pdo);
+        $manager   = new EntityManager($pdo);
         $container = app()->container();
         $container->set(EntityManager::class, $manager);
         $container->set(RepositoryFactory::class, new RepositoryFactory($pdo, $manager));

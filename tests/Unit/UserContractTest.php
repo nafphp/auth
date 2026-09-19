@@ -10,7 +10,9 @@ use Naf\Auth\Credentials\PasswordCredentials;
 use Naf\Auth\Identity\Identity;
 use Naf\Auth\Identity\UserProfile;
 use PHPUnit\Framework\TestCase;
-use Tests\Fixtures\{Member, MemoryStore, ProviderSpy};
+use Tests\Fixtures\Member;
+use Tests\Fixtures\MemoryStore;
+use Tests\Fixtures\ProviderSpy;
 
 /** One contract for every way of signing in, and what it is allowed to say. */
 final class UserContractTest extends TestCase

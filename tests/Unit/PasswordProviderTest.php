@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Unit;
 
-use Naf\Auth\Credentials\{CredentialsInterface, PasswordCredentials};
-use Naf\Auth\Identity\{Identity, IdentityInterface};
+use Naf\Auth\Credentials\CredentialsInterface;
+use Naf\Auth\Credentials\PasswordCredentials;
+use Naf\Auth\Identity\Identity;
+use Naf\Auth\Identity\IdentityInterface;
 use Naf\Auth\Provider\PasswordProvider;
 use Naf\Auth\Support\PasswordHasher;
 use PHPUnit\Framework\TestCase;
@@ -81,7 +83,7 @@ final class PasswordProviderTest extends TestCase
     public function testOtherKindsOfCredentialsAreNotThisProvidersBusiness(): void
     {
         $provider = $this->provider(['alice' => 'hunter2']);
-        $token = new class implements CredentialsInterface {};
+        $token    = new class implements CredentialsInterface {};
 
         self::assertNull($provider->authenticate($token));
     }
@@ -119,7 +121,7 @@ final class PasswordProviderTest extends TestCase
             $hashes[$username] = $password === null ? null : $seed->hash($password);
         }
 
-        return new class($hashes, new PasswordHasher(PASSWORD_BCRYPT, ['cost' => $currentCost])) extends PasswordProvider {
+        return new class ($hashes, new PasswordHasher(PASSWORD_BCRYPT, ['cost' => $currentCost])) extends PasswordProvider {
             public ?string $stored = null;
 
             /** @param array<string, string|null> $hashes */

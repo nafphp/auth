@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Naf\Auth\Exceptions;
 
-class ForbiddenException extends \RuntimeException
+use RuntimeException;
+
+class ForbiddenException extends RuntimeException
 {
     public function __construct(string $message = 'Permission denied.')
     {

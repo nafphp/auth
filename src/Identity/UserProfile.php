@@ -26,7 +26,8 @@ final readonly class UserProfile
         public ?string $name = null,
         public ?string $email = null,
         public bool $emailVerified = false,
-    ) {}
+    ) {
+    }
 
     /**
      * The OpenID Connect claims this profile stands for.

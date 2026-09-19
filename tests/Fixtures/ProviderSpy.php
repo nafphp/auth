@@ -4,16 +4,20 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures;
 
-use Naf\Auth\Credentials\{CredentialsInterface, PasswordCredentials};
+use Naf\Auth\Credentials\CredentialsInterface;
+use Naf\Auth\Credentials\PasswordCredentials;
 use Naf\Auth\Identity\IdentityInterface;
 use Naf\Auth\Provider\ProviderInterface;
+use SensitiveParameter;
 
 final class ProviderSpy implements ProviderInterface
 {
     public int $attempts = 0;
-    public int $lookups = 0;
+    public int $lookups  = 0;
 
-    public function __construct(public ?IdentityInterface $identity = null) {}
+    public function __construct(public ?IdentityInterface $identity = null)
+    {
+    }
 
     public function find(string $identifier): ?IdentityInterface
     {
@@ -22,7 +26,7 @@ final class ProviderSpy implements ProviderInterface
         return $this->identity?->getIdentifier() === $identifier ? $this->identity : null;
     }
 
-    public function authenticate(#[\SensitiveParameter] CredentialsInterface $credentials): ?IdentityInterface
+    public function authenticate(#[SensitiveParameter] CredentialsInterface $credentials): ?IdentityInterface
     {
         $this->attempts++;
 

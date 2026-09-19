@@ -10,7 +10,7 @@ use Naf\Auth\Identity\IdentityInterface;
 final class CountingIdentity implements IdentityInterface
 {
     public int $permissionReads = 0;
-    public int $roleReads = 0;
+    public int $roleReads       = 0;
 
     /**
      * @param list<string> $permissions
@@ -20,9 +20,13 @@ final class CountingIdentity implements IdentityInterface
         private readonly string $identifier = '42',
         private readonly array $permissions = [],
         private readonly array $roles = [],
-    ) {}
+    ) {
+    }
 
-    public function getIdentifier(): string { return $this->identifier; }
+    public function getIdentifier(): string
+    {
+        return $this->identifier;
+    }
 
     public function getPermissions(): iterable
     {

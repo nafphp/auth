@@ -6,6 +6,7 @@ namespace Naf\Auth\Provider;
 
 use Naf\Auth\Credentials\CredentialsInterface;
 use Naf\Auth\Identity\IdentityInterface;
+use SensitiveParameter;
 
 /**
  * Where your accounts live.
@@ -17,7 +18,7 @@ use Naf\Auth\Identity\IdentityInterface;
 interface ProviderInterface
 {
     /** Null means "not these credentials" — never say which half was wrong. */
-    public function authenticate(#[\SensitiveParameter] CredentialsInterface $credentials): ?IdentityInterface;
+    public function authenticate(#[SensitiveParameter] CredentialsInterface $credentials): ?IdentityInterface;
 
     /** Reload an account. Null once it may no longer sign in: deleted, locked, disabled. */
     public function find(string $identifier): ?IdentityInterface;

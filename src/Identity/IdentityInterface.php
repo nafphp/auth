@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Naf\Auth\Identity;
 
+use BackedEnum;
+
 /**
  * The signed-in person, as your application models them.
  *
@@ -17,9 +19,9 @@ interface IdentityInterface
     /** Stable, non-empty key for this account. Written to the session on login. */
     public function getIdentifier(): string;
 
-    /** @return iterable<string|\BackedEnum> */
+    /** @return iterable<string|BackedEnum> */
     public function getRoles(): iterable;
 
-    /** @return iterable<string|\BackedEnum> Everything this account may do, however you derive it. */
+    /** @return iterable<string|BackedEnum> Everything this account may do, however you derive it. */
     public function getPermissions(): iterable;
 }

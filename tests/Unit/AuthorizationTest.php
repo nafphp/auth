@@ -5,10 +5,14 @@ declare(strict_types=1);
 namespace Tests\Unit;
 
 use Naf\Auth\Auth;
-use Naf\Auth\Exceptions\{ForbiddenException, UnauthenticatedException};
-use Naf\Auth\Identity\{Identity, IdentityInterface};
+use Naf\Auth\Exceptions\ForbiddenException;
+use Naf\Auth\Exceptions\UnauthenticatedException;
+use Naf\Auth\Identity\Identity;
+use Naf\Auth\Identity\IdentityInterface;
 use PHPUnit\Framework\TestCase;
-use Tests\Fixtures\{CountingIdentity, Permission};
+use stdClass;
+use Tests\Fixtures\CountingIdentity;
+use Tests\Fixtures\Permission;
 
 /** Permissions, roles, per-object policies and the 401/403 requirements. */
 final class AuthorizationTest extends TestCase
@@ -30,7 +34,7 @@ final class AuthorizationTest extends TestCase
         self::assertFalse($auth->hasRole('admin'));
         self::assertFalse($auth->hasAnyRole('admin'));
         self::assertFalse($auth->can(), 'Even the empty question is a no for a guest.');
-        self::assertFalse($auth->allows('edit', new \stdClass()));
+        self::assertFalse($auth->allows('edit', new stdClass()));
     }
 
     public function testGrantsMatchExactlyAndAcceptEnums(): void
@@ -80,7 +84,7 @@ final class AuthorizationTest extends TestCase
     public function testGrantsAreReadOnceHoweverManyNamesAreChecked(): void
     {
         $identity = new CountingIdentity('42', ['a', 'b', 'c'], ['admin']);
-        $auth = new Auth();
+        $auth     = new Auth();
         $auth->setIdentity($identity);
 
         self::assertTrue($auth->can('a', 'b', 'c'));
@@ -97,7 +101,7 @@ final class AuthorizationTest extends TestCase
     public function testGeneratorGrantsSurviveABatchCheck(): void
     {
         $identity = new CountingIdentity('42', ['posts.edit', 'posts.publish']);
-        $auth = new Auth();
+        $auth     = new Auth();
         $auth->setIdentity($identity);
 
         self::assertTrue($auth->can('posts.edit', 'posts.publish'));
@@ -202,7 +206,9 @@ final class AuthorizationTest extends TestCase
 
 class Post
 {
-    public function __construct(public string $authorId = '') {}
+    public function __construct(public string $authorId = '')
+    {
+    }
 }
 
 class Article extends Post

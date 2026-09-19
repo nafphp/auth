@@ -9,9 +9,11 @@ use Naf\Auth\Credentials\PasswordCredentials;
 use Naf\Auth\Identity\Identity;
 use Naf\Auth\Session\SessionStateStore;
 use Naf\Session\Core\Session;
-use PHPUnit\Framework\Attributes\{PreserveGlobalState, RunTestsInSeparateProcesses};
+use PHPUnit\Framework\Attributes\PreserveGlobalState;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
+use stdClass;
 use Tests\Fixtures\ProviderSpy;
 
 /** What actually happens to a real PHP session when somebody signs in or out. */
@@ -99,7 +101,7 @@ final class SessionStateStoreTest extends TestCase
             'bad',
             ['provider' => 'ldap'],
             ['provider' => [], 'identifier' => '42'],
-            ['provider' => 'ldap', 'identifier' => new \stdClass()],
+            ['provider' => 'ldap', 'identifier' => new stdClass()],
             ['provider' => '', 'identifier' => '42'],
             ['provider' => 'ldap', 'identifier' => ''],
         ];
@@ -116,7 +118,9 @@ final class SessionStateStoreTest extends TestCase
     {
         $this->session->set('auth', ['provider' => 'old', 'identifier' => 'old-user']);
         $stubborn = new class extends Session {
-            public function regenerate(int $intervalSeconds = 300): void {}
+            public function regenerate(int $intervalSeconds = 300): void
+            {
+            }
         };
 
         $auth = new Auth(new SessionStateStore($stubborn));
