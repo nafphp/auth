@@ -36,7 +36,8 @@
   },
   "suggest": {
     "naf/session": "Keep people signed in across requests.",
-    "naf/orm": "Use the shipped OrmProvider instead of writing your own."
+    "naf/orm": "Use the shipped OrmProvider instead of writing your own.",
+    "naf/rbac": "Roles and permissions an installation can edit, answering getRoles() and getPermissions()."
   },
   "scripts": {
     "test": "phpunit --colors=always",
