@@ -5,6 +5,8 @@ declare(strict_types=1);
 return ['auth' => [
     // null persists when naf/session is installed; true requires it, false disables it.
     'session' => null,
+    // Discard secrets issued before login/logout; other session values survive.
+    'session_reset_keys' => ['_csrf'],
 
     /*
      * Where your accounts live. The ordinary case is one model:

@@ -29,6 +29,7 @@ if (!$container->has(PasswordHasher::class)) {
 if (!$container->has(SessionStateStore::class)) {
     $container->set(SessionStateStore::class, static fn() => new SessionStateStore(
         $container->get(Session::class),
+        resetKeys: config('auth:session_reset_keys', ['_csrf']),
     ));
 }
 

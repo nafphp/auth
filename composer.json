@@ -30,6 +30,7 @@
   "require-dev": {
     "friendsofphp/php-cs-fixer": "3.95.25",
     "naf/orm": "^0.2",
+    "naf/form": "^0.2.4",
     "naf/session": "^0.2",
     "phpstan/phpstan": "^2.1",
     "phpunit/phpunit": "^12.1"
