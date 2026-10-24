@@ -10,8 +10,12 @@ use RuntimeException;
 /** Keeps the login in the injected naf/session session. */
 class SessionStateStore implements StateStoreInterface
 {
-    public function __construct(private readonly Session $session, private readonly string $key = 'auth')
-    {
+    /** @param list<string> $resetKeys Secrets bound to the previous authentication state. */
+    public function __construct(
+        private readonly Session $session,
+        private readonly string $key = 'auth',
+        private readonly array $resetKeys = ['_csrf'],
+    ) {
     }
 
     public function read(): ?array
@@ -52,15 +56,24 @@ class SessionStateStore implements StateStoreInterface
             throw new RuntimeException('Could not rotate the authentication session.');
         }
 
+        $this->forgetSecrets();
         $session->set($this->key, ['provider' => $provider, 'identifier' => $identifier]);
     }
 
     public function clear(): void
     {
         $this->session->forget($this->key);
+        $this->forgetSecrets();
 
         if (session_status() === PHP_SESSION_ACTIVE) {
             $this->session->regenerate(0);
+        }
+    }
+
+    private function forgetSecrets(): void
+    {
+        foreach ($this->resetKeys as $key) {
+            $this->session->forget($key);
         }
     }
 }

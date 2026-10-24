@@ -8,6 +8,7 @@ use Naf\Auth\Auth;
 use Naf\Auth\Credentials\PasswordCredentials;
 use Naf\Auth\Identity\Identity;
 use Naf\Auth\Session\SessionStateStore;
+use Naf\Form\Support\Csrf;
 use Naf\Session\Core\Session;
 use PHPUnit\Framework\Attributes\PreserveGlobalState;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
@@ -15,6 +16,8 @@ use PHPUnit\Framework\TestCase;
 use RuntimeException;
 use stdClass;
 use Tests\Fixtures\ProviderSpy;
+
+use function Naf\app;
 
 /** What actually happens to a real PHP session when somebody signs in or out. */
 #[RunTestsInSeparateProcesses]
@@ -35,6 +38,7 @@ final class SessionStateStoreTest extends TestCase
         session_save_path($path);
         $this->session = new Session();
         $this->session->start();
+        app()->container()->set(Session::class, $this->session);
         $this->store = new SessionStateStore($this->session);
     }
 
@@ -112,6 +116,43 @@ final class SessionStateStoreTest extends TestCase
             self::assertNull($this->store->read());
             self::assertNull($this->session->get('auth'));
         }
+    }
+
+    public function testLoginAdoptingAnIdentityAndLogoutInvalidatePreviouslyIssuedCsrfTokens(): void
+    {
+        $csrf = new Csrf();
+        $auth = new Auth($this->store);
+        $auth->addProvider('ldap', new ProviderSpy(new Identity('42')));
+        $this->session->set('cart', ['item']);
+
+        $guestToken = $csrf->token();
+        self::assertTrue($auth->authenticate(new PasswordCredentials('alice', 'valid')));
+        self::assertFalse($csrf->validate($guestToken));
+        $loginToken = $csrf->token();
+        self::assertNotSame($guestToken, $loginToken);
+        self::assertTrue($csrf->validate($loginToken));
+
+        $auth->setIdentity(new Identity('43'), 'ldap');
+        self::assertFalse($csrf->validate($loginToken));
+        $identityToken = $csrf->token();
+        self::assertTrue($csrf->validate($identityToken));
+
+        $auth->logout();
+        self::assertFalse($csrf->validate($identityToken));
+        self::assertTrue($csrf->validate($csrf->token()));
+        self::assertSame(['item'], $this->session->get('cart'));
+    }
+
+    public function testConfiguredTrustSecretsAreClearedAtBothBoundaries(): void
+    {
+        $store = new SessionStateStore($this->session, resetKeys: ['_csrf', 'step_up']);
+        $this->session->set('step_up', 'guest-secret');
+        $store->write('ldap', '42');
+        self::assertNull($this->session->get('step_up'));
+
+        $this->session->set('step_up', 'authenticated-secret');
+        $store->clear();
+        self::assertNull($this->session->get('step_up'));
     }
 
     public function testASessionIdThatRefusesToRotateAbortsTheLogin(): void
